@@ -1,8 +1,12 @@
-#Downloads
+#!/bin/bash
+
+# Download login script
 curl -s -o login.sh -L "https://raw.githubusercontent.com/JohnnyNetsec/github-vm/main/mac/login.sh"
-#disable spotlight indexing
+
+# Disable Spotlight indexing
 sudo mdutil -i off -a
-#Create new account
+
+# Create new account
 sudo dscl . -create /Users/runneradmin
 sudo dscl . -create /Users/runneradmin UserShell /bin/bash
 sudo dscl . -create /Users/runneradmin RealName Runner_Admin
@@ -13,15 +17,33 @@ sudo dscl . -passwd /Users/runneradmin P@ssw0rd!
 sudo dscl . -passwd /Users/runneradmin P@ssw0rd!
 sudo createhomedir -c -u runneradmin > /dev/null
 sudo dscl . -append /Groups/admin GroupMembership runneradmin
-#Enable VNC
+
+# Enable VNC
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -allowAccessFor -allUsers -privs -all
-sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -clientopts -setvnclegacy -vnclegacy yes 
+sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -clientopts -setvnclegacy -vnclegacy yes
+
 echo runnerrdp | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt
-#Start VNC/reset changes
+
+# Restart VNC
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
-#install ngrok
-brew install --cask ngrok
-#configure ngrok and start it
-ngrok authtoken $1
-ngrok tcp 5900 --region=in &
+
+# Start Pinggy tunnel
+echo "Starting Pinggy tunnel..."
+
+ssh \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    -o ServerAliveInterval=30 \
+    -o ExitOnForwardFailure=yes \
+    -p 443 \
+    -R0:localhost:5900 \
+    tcp@a.pinggy.io > pinggy.log 2>&1 &
+
+sleep 10
+
+echo "====================================="
+echo "Pinggy tunnel started."
+echo "Tunnel information:"
+cat pinggy.log
+echo "====================================="
