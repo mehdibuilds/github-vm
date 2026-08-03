@@ -1,6 +1,19 @@
 #!/bin/bash
-echo ..........................................................
-echo IP:
-curl -s http://localhost:4040/api/tunnels | grep -o '"public_url":"[^"]*' | sed 's/"public_url":"//'
-echo Username: runneradmin
-echo Password: P@ssw0rd!
+
+echo "========================================"
+echo "      MacOS Remote Access Details"
+echo "========================================"
+
+echo
+echo "Username : runneradmin"
+echo "Password : P@ssw0rd!"
+echo
+
+echo "Pinggy tunnel:"
+grep -Eo 'tcp://[^[:space:]]+' pinggy.log || echo "Tunnel not found yet."
+
+echo
+echo "If no tunnel is shown, check pinggy.log:"
+cat pinggy.log
+
+echo "========================================"
